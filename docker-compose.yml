@@ -1,0 +1,55 @@
+version: '3.8'
+services:
+  database:
+    image: postgres:15
+    container_name: database
+    environment:
+      POSTGRES_DB: saas_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"  # Fixed: external:internal
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "5000:5000"  # Fixed: external:internal
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: saas_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: your-secret-key
+      FRONTEND_URL: http://localhost:3000  # Use service name, not localhost
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]  # localhost is correct here (from inside container)
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # Note: If curl is not available, use wget or create a custom health check script
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"  # Fixed: external:internal
+    environment:
+      REACT_APP_API_URL: http://localhost:5000/api  # Use service name, not localhost
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  db_data:
