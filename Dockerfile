@@ -29,7 +29,7 @@ COPY backend ./backend
 COPY frontend/package*.json ./frontend/
 RUN cd frontend && npm install
 COPY frontend ./frontend
-RUN cd frontend && REACT_APP_API_URL=/api npm run build
+RUN cd frontend && REACT_APP_API_URL=/api GENERATE_SOURCEMAP=false npm run build
 
 WORKDIR /app/backend
 
