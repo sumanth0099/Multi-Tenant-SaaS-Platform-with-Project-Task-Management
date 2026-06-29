@@ -23,6 +23,8 @@ services:
     ports:
       - "5000:5000"  # Fixed: external:internal
     environment:
+      # Use DATABASE_URL to connect to Neon DB (or uncomment and use DB_HOST etc. for local)
+      # DATABASE_URL: postgresql://user:password@ep-host.us-east-2.aws.neon.tech/neondb?sslmode=require
       DB_HOST: database
       DB_PORT: 5432
       DB_NAME: saas_db

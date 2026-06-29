@@ -111,3 +111,47 @@ Focused on the most important APIs for daily operations (prioritized by usage fr
 - List tasks. Supports `?status=todo&priority=high`. Paginated with assignee details (200).
 
 All use `{success, message, data}` format. Health: GET /api/health.
+
+## Hosting on Render & Neon DB
+
+This project is fully ready to be hosted on **Render** utilizing **Docker** and a **Neon PostgreSQL DB**.
+
+### 1. Database Setup (Neon DB)
+1. Sign up for [Neon Console](https://neon.tech/) and create a new project with a PostgreSQL database.
+2. Retrieve your database connection string (`DATABASE_URL`). It should look something like:
+   `postgresql://alex:AbC123dEf@ep-cool-darkness-123456.us-east-2.aws.neon.tech/neondb?sslmode=require`
+
+### 2. Backend Deployment on Render (Docker Web Service)
+1. In Render, click **New** -> **Web Service**.
+2. Connect your Git repository.
+3. In the Web Service configuration:
+   - **Name:** `saas-backend` (or your preferred name)
+   - **Environment:** `Docker`
+   - **Docker Context Path:** `./backend` (Or leave `./` if deploying from the root of the backend repo)
+   - **Docker File Path:** `Dockerfile` (Relative to context, so `Dockerfile` inside the backend directory)
+4. Under **Advanced / Environment Variables**, add the following:
+   - `DATABASE_URL`: The Neon DB connection string from Step 1.
+   - `JWT_SECRET`: A secure random string (minimum 32 characters).
+   - `JWT_EXPIRES_IN`: `24h`
+   - `NODE_ENV`: `production`
+   - `FRONTEND_URL`: The URL of your deployed frontend (e.g. `https://saas-frontend.onrender.com`).
+5. Render will automatically build the image, run the entrypoint, wait for Neon DB, run the migrations and seeds, and start the backend service.
+
+### 3. Frontend Deployment on Render (Static Site or Web Service)
+#### Option A: Static Site (Recommended)
+1. In Render, click **New** -> **Static Site**.
+2. Connect your Git repository.
+3. Configure the build:
+   - **Build Command:** `npm run build`
+   - **Publish Directory:** `build`
+   - **Root Directory:** `frontend`
+4. Under **Environment Variables**, add:
+   - `REACT_APP_API_URL`: The URL of your deployed backend (e.g. `https://saas-backend.onrender.com/api`).
+
+#### Option B: Docker Web Service
+1. Click **New** -> **Web Service** and choose **Docker**.
+2. Configure build:
+   - **Docker Context Path:** `./frontend`
+   - **Docker File Path:** `Dockerfile`
+3. Under **Environment Variables**, add:
+   - `REACT_APP_API_URL`: The URL of your deployed backend.

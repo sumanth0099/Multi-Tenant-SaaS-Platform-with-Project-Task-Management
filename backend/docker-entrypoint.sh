@@ -1,11 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "⏳ Waiting for postgres..."
-until nc -z database 5432; do
-  echo "postgres startup...";
-  sleep 1;
-done
+echo "⏳ Waiting for database connection..."
+node scripts/wait-for-db.js
 
 echo "🔄 Running migrations..."
 npm run migrate
