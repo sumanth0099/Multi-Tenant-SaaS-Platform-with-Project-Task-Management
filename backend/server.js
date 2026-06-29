@@ -16,6 +16,13 @@ app.use(
 app.use(express.json());
 
 // Routes
+app.get("/", (req, res) => {
+  res.json({
+    message: "Multi-Tenant SaaS Platform API is active and running.",
+    healthcheck: "/api/health"
+  });
+});
+
 app.get("/api/health", async (req, res) => {
   try {
     const result = await pool.query("SELECT 1");
