@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const pool = require('./src/config/db');
 
@@ -16,13 +17,6 @@ app.use(
 app.use(express.json());
 
 // Routes
-app.get("/", (req, res) => {
-  res.json({
-    message: "Multi-Tenant SaaS Platform API is active and running.",
-    healthcheck: "/api/health"
-  });
-});
-
 app.get("/api/health", async (req, res) => {
   try {
     const result = await pool.query("SELECT 1");
@@ -57,6 +51,14 @@ pool.connect((err, client, release) => {
     }
     console.log('Database connected successfully:', result.rows[0]);
   });
+});
+
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// Catch-all route to serve React's index.html for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;

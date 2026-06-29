@@ -25,6 +25,12 @@ RUN cd backend && npm install
 # Copy the backend source files
 COPY backend ./backend
 
+# Build the frontend (injecting REACT_APP_API_URL to match our backend path)
+COPY frontend/package*.json ./frontend/
+RUN cd frontend && npm install
+COPY frontend ./frontend
+RUN cd frontend && export REACT_APP_API_URL=/api && npm run build
+
 WORKDIR /app/backend
 
 # Ensure the entrypoint script is executable
